@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.microsoft.playwright.Browser;
@@ -30,7 +31,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 @EnableRuleMigrationSupport
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("integration")
 class ITOauthPlaywrightTest {
     @LocalServerPort
@@ -39,16 +40,16 @@ class ITOauthPlaywrightTest {
     private Browser browser;
     private Page page;
 
-    // @RegisterExtension
-    // static WireMockExtension wme = WireMockExtension.newInstance()
-    //     .options(wireMockConfig()
-    //         .port(8090)
-    //         .extensions(CaptureStateTransformer.class))
-    //     .build();
+    @RegisterExtension
+    static WireMockExtension wme = WireMockExtension.newInstance()
+        .options(wireMockConfig()
+            .port(8090)
+            .extensions(new ResponseTemplateTransformer(true)))
+        .build();
     // WireMockServer wireMockServer;
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
-        .extensions(CaptureStateTransformer.class));
+    // @Rule
+    // public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
+    //     .extensions(new ResponseTemplateTransformer(true)));
 
     @BeforeEach
     public void setup() {
@@ -60,18 +61,19 @@ class ITOauthPlaywrightTest {
         //     .extensions(CaptureStateTransformer.class));
         // wireMockServer.start();
 
-        String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-client?code=my-acccess-code&state=${state}", port);
+        // String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-provider?code=my-acccess-code&state=${state}", port);
 
         // set up a Mock OAuth server
-        stubFor(get(urlPathMatching("/oauth/authorize.*"))
+        wme.stubFor(get(urlPathMatching("/oauth/authorize.*"))
                 .willReturn(aResponse()
-                        .withStatus(302)
-                        .withHeader("Location",header)
-                        .withTransformers("CaptureStateTransformer")
-                )
-        );
+                    .withStatus(200)
+                    .withHeader("Content-Type", "text/html")
+                    .withBodyFile("login.html")));
 
-        stubFor(post(urlPathMatching("/oauth/token"))
+        wme.stubFor(post(urlPathEqualTo("/login"))
+                    .willReturn(temporaryRedirect("{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
+
+        wme.stubFor(post(urlPathMatching("/oauth/token"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -82,7 +84,7 @@ class ITOauthPlaywrightTest {
                 )
         );
 
-        stubFor(get(urlPathMatching("/userinfo"))
+        wme.stubFor(get(urlPathMatching("/userinfo"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
