@@ -2,16 +2,20 @@ package edu.ucsb.cs156.example.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -24,6 +28,7 @@ import edu.ucsb.cs156.example.helpers.StringSource;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+@EnableRuleMigrationSupport
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("integration")
@@ -34,13 +39,16 @@ class ITOauthPlaywrightTest {
     private Browser browser;
     private Page page;
 
-    @RegisterExtension
-    static WireMockExtension wme = WireMockExtension.newInstance()
-        .options(wireMockConfig()
-            .port(8090)
-            .extensions(CaptureStateTransformer.class))
-        .build();
+    // @RegisterExtension
+    // static WireMockExtension wme = WireMockExtension.newInstance()
+    //     .options(wireMockConfig()
+    //         .port(8090)
+    //         .extensions(CaptureStateTransformer.class))
+    //     .build();
     // WireMockServer wireMockServer;
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
+        .extensions(CaptureStateTransformer.class));
 
     @BeforeEach
     public void setup() {
@@ -55,7 +63,7 @@ class ITOauthPlaywrightTest {
         String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-client?code=my-acccess-code&state=${state}", port);
 
         // set up a Mock OAuth server
-        wme.stubFor(get(urlPathMatching("/oauth/authorize.*"))
+        stubFor(get(urlPathMatching("/oauth/authorize.*"))
                 .willReturn(aResponse()
                         .withStatus(302)
                         .withHeader("Location",header)
@@ -63,7 +71,7 @@ class ITOauthPlaywrightTest {
                 )
         );
 
-        wme.stubFor(post(urlPathMatching("/oauth/token"))
+        stubFor(post(urlPathMatching("/oauth/token"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -74,7 +82,7 @@ class ITOauthPlaywrightTest {
                 )
         );
 
-        wme.stubFor(get(urlPathMatching("/userinfo"))
+        stubFor(get(urlPathMatching("/userinfo"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
