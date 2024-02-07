@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.microsoft.playwright.Browser;
@@ -19,6 +20,7 @@ import edu.ucsb.cs156.example.helpers.StringSource;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("integration")
 class ITSimplePlaywrightTest {
     @LocalServerPort
     private int port;
@@ -43,7 +45,7 @@ class ITSimplePlaywrightTest {
         String url = String.format("http://localhost:%d/", port);
         page.navigate(url);
         String bodyHTML = page.innerHTML("body");
-        String expectedHTML = StringSource.getDevelopmentDefaultLocalhostContent();
+        String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
         assertEquals(expectedHTML, bodyHTML);
     }
 
