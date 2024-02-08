@@ -73,24 +73,22 @@ class ITOauthPlaywrightTest {
         wme.stubFor(post(urlPathEqualTo("/login"))
                     .willReturn(temporaryRedirect("{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
 
-        wme.stubFor(post(urlPathMatching("/oauth/token"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"access_token\":\"my-access-token\"" +
-                                ", \"token_type\":\"Bearer\"" +
-                                ", \"expires_in\":\"3600\"" +
-                                "}")
-                )
-        );
+        wme.stubFor(post(urlPathEqualTo("/oauth/token"))
+                    .willReturn(okJson("{\"token_type\": \"Bearer\",\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\"}")));
 
         wme.stubFor(get(urlPathMatching("/userinfo"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"sub\":\"my-user-id\"" +
-                                ",\"name\":\"Mark Hoogenboom\"" +
-                                ", \"email\":\"mark.hoogenboom@example.com\"" +
+                        .withBody("{\"sub\":\"107126842018026740288\"" +
+                                ",\"name\":\"Andrew Peng\"" +
+                                ",\"given_name\":\"Andrew\"" +
+                                ",\"family_name\":\"Peng\"" +
+                                ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
+                                ", \"email\":\"andrewpeng@ucsb.edu\"" +
+                                ",\"email_verified\":true" +
+                                ",\"locale\":\"en\"" +
+                                ",\"hd\":\"ucsb.edu\"" +
                                 "}")
                 )
         );
@@ -108,18 +106,15 @@ class ITOauthPlaywrightTest {
     }
 
     @Test
-    public void testGreeting() throws Exception {
-        // String url = String.format("http://localhost:%d/", port);
-        // page.navigate(url);
-        // String bodyHTML = page.innerHTML("body");
-        // String expectedHTML = StringSource.getDevelopmentDefaultLocalhostContent();
-        // assertEquals(expectedHTML, bodyHTML);
-
+    public void tryLogin() throws Exception {
         String url = String.format("http://localhost:%d/oauth2/authorization/my-oauth-provider", port);
         page.navigate(url);
-        // page.getByText("Log In").click();
-        // url = String.format("http://localhost:%d/", port);
-        // page.navigate(url);
+        page.locator("#username").fill("andrewpeng@ucsb.edu");
+        page.locator("#password").fill("password");
+        page.locator("#submit").click();
+
+        // String cURL = page.url();
+        // assertEquals("http://localhost:8080/", cURL);
         String bodyHTML = page.innerHTML("body");
         String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
         assertEquals(expectedHTML, bodyHTML);
