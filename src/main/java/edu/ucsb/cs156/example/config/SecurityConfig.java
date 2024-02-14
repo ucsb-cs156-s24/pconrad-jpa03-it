@@ -79,7 +79,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
           Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
           log.info("********** userAttributes={}", userAttributes);
-
+          
+          log.info("********** adminEmails={}", adminEmails);
+          
           String email = (String) userAttributes.get("email");
           if (isAdmin(email)) {
             mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));

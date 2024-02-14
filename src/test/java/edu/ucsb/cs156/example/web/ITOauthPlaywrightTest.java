@@ -1,6 +1,7 @@
 package edu.ucsb.cs156.example.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
@@ -85,13 +86,16 @@ class ITOauthPlaywrightTest {
                                 ",\"given_name\":\"Andrew\"" +
                                 ",\"family_name\":\"Peng\"" +
                                 ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
-                                ", \"email\":\"andrewpeng@ucsb.edu\"" +
+                                ", \"email\":\"andrewpeng@test.com\"" +
                                 ",\"email_verified\":true" +
                                 ",\"locale\":\"en\"" +
-                                ",\"hd\":\"ucsb.edu\"" +
+                                ",\"hd\":\"test.com\"" +
                                 "}")
                 )
         );
+
+        // wme.stubFor(get(urlPathEqualTo("/userinfo"))
+        //         .willReturn(okJson("{\"sub\":\"my-id\",\"email\":\"andrewpeng@ucsb.edu\"}")));
 
         browser = Playwright.create().chromium().launch();
         BrowserContext context = browser.newContext();
@@ -109,12 +113,16 @@ class ITOauthPlaywrightTest {
     public void tryLogin() throws Exception {
         String url = String.format("http://localhost:%d/oauth2/authorization/my-oauth-provider", port);
         page.navigate(url);
-        page.locator("#username").fill("andrewpeng@ucsb.edu");
+        page.locator("#username").fill("andrewpeng@test.com");
         page.locator("#password").fill("password");
         page.locator("#submit").click();
 
         // String cURL = page.url();
-        // assertEquals("http://localhost:8080/", cURL);
+        // assertSame("http://localhost:8080/", cURL);
+
+        // String cURL = String.format("http://localhost:%d/profile", port);
+        // page.navigate(cURL);
+
         String bodyHTML = page.innerHTML("body");
         String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
         assertEquals(expectedHTML, bodyHTML);
