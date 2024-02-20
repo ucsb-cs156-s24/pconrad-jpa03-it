@@ -74,6 +74,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       authorities.forEach(authority -> {
         log.info("********** authority={}", authority);
         mappedAuthorities.add(authority);
+        log.info("********** added authority={}", authority);
         if (OAuth2UserAuthority.class.isInstance(authority)) {
           OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
 
@@ -84,6 +85,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
           
           String email = (String) userAttributes.get("email");
           if (isAdmin(email)) {
+            log.info("********** email is admin={}", email);
             mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
           }
 

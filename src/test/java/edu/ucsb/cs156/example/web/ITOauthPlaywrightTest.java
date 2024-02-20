@@ -86,10 +86,10 @@ class ITOauthPlaywrightTest {
                                 ",\"given_name\":\"Andrew\"" +
                                 ",\"family_name\":\"Peng\"" +
                                 ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
-                                ", \"email\":\"andrewpeng@test.com\"" +
+                                ", \"email\":\"andrewpeng@localhost:8090\"" +
                                 ",\"email_verified\":true" +
                                 ",\"locale\":\"en\"" +
-                                ",\"hd\":\"test.com\"" +
+                                ",\"hd\":\"localhost:8090\"" +
                                 "}")
                 )
         );
@@ -113,7 +113,7 @@ class ITOauthPlaywrightTest {
     public void tryLogin() throws Exception {
         String url = String.format("http://localhost:%d/oauth2/authorization/my-oauth-provider", port);
         page.navigate(url);
-        page.locator("#username").fill("andrewpeng@test.com");
+        page.locator("#username").fill("andrewpeng@localhost:8090");
         page.locator("#password").fill("password");
         page.locator("#submit").click();
 
