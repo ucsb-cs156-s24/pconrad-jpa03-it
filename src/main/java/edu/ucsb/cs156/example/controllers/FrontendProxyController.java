@@ -1,5 +1,6 @@
 package edu.ucsb.cs156.example.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.mvc.ProxyExchange;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
 
 import edu.ucsb.cs156.example.helpers.StringSource;
+import edu.ucsb.cs156.example.services.WiremockService;
 
 import java.net.ConnectException;
 
@@ -15,7 +17,8 @@ import java.net.ConnectException;
 @RestController
 public class FrontendProxyController {
 
- 
+  @Autowired
+  WiremockService wiremockService;
 
   @GetMapping({"/", "/{path:^(?!api|oauth2|swagger-ui).*}/**"})
   public ResponseEntity<String> proxy(ProxyExchange<String> proxy) {

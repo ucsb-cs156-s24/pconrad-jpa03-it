@@ -34,7 +34,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("integration")
-class ITOauthPlaywrightTest {
+class ITOauthPlaywright {
     @LocalServerPort
     private int port;
 

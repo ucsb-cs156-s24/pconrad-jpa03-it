@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class ITtest {
+public class ITExample {
     @Test
     public void testTest() throws Exception {
         assertTrue(true);

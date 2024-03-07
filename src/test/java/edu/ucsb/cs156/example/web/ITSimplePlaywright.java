@@ -21,7 +21,7 @@ import edu.ucsb.cs156.example.helpers.StringSource;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("integration")
-class ITSimplePlaywrightTest {
+class ITSimplePlaywright {
     @LocalServerPort
     private int port;
 

@@ -97,7 +97,6 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8-standalone</artifactId>
             <version>2.35.1</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -121,7 +120,7 @@
             <scope>test</scope>
         </dependency>
 
-<!-- This is to support @Rule in junit5 see: https://www.arhohuttunen.com/junit-5-migration/ -->
+        <!-- This is to support @Rule in junit5 see: https://www.arhohuttunen.com/junit-5-migration/ -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-migrationsupport</artifactId>
@@ -138,15 +137,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-    
+
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                  <!-- Activate the use of TCP to transmit events to the plugin -->
-                  <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                    <!-- Activate the use of TCP to transmit events to the plugin -->
+                    <forkNode
+                        implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
                 </configuration>
-              </plugin>
+            </plugin>
 
             <!-- Test case coverage report -->
             <plugin>
@@ -273,11 +273,35 @@
 
     </build>
 
-    <profiles>
+    <profiles> 
+        <!-- active by default -->
+        <profile>
+            <id>localhost</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+
+            <properties>
+                <springProfiles>development</springProfiles>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+
+        <!-- to run with this profile use "INTEGRATION=true mvn spring-boot:run" -->
         <profile>
             <id>integration</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env.INTEGRATION</name>
+                </property>
             </activation>
             <properties>
                 <springProfiles>integration</springProfiles>
@@ -352,6 +376,28 @@
             </build>
         </profile>
 
+        <!-- to run with this profile use "LOCALHOST=true mvn spring-boot:run" -->
+        <profile>
+            <id>wiremock</id>
+            <activation>
+                <property>
+                    <name>env.WIREMOCK</name>
+                </property>
+            </activation>
+
+            <properties>
+                <springProfiles>wiremock,development</springProfiles>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- to run with this profile use "PRODUCTION=true mvn spring-boot:run" -->
         <profile>
             <id>production</id>
             <activation>
