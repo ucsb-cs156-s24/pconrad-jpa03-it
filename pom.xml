@@ -376,7 +376,7 @@
             </build>
         </profile>
 
-        <!-- to run with this profile use "LOCALHOST=true mvn spring-boot:run" -->
+        <!-- to run with this profile use "WIREMOCK=true mvn spring-boot:run" -->
         <profile>
             <id>wiremock</id>
             <activation>
