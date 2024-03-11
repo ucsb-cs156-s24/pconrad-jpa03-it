@@ -275,9 +275,27 @@
 
     <profiles>
         <profile>
-            <id>integration</id>
+            <id>localhost</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <springProfiles>development</springProfiles>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>integration</id>
+            <activation>
+                <property>
+                    <name>env.INTEGRATION</name>
+                </property>
             </activation>
             <properties>
                 <springProfiles>integration</springProfiles>
