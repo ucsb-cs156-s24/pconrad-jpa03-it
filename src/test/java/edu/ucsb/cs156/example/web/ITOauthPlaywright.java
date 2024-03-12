@@ -28,25 +28,26 @@ import edu.ucsb.cs156.example.CaptureStateTransformer;
 import edu.ucsb.cs156.example.helpers.StringSource;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("integration")
-class ITOauthPlaywrightTest {
+class ITOauthPlaywright {
     @LocalServerPort
     private int port;
 
     private Browser browser;
     private Page page;
 
-    @RegisterExtension
-    static WireMockExtension wme = WireMockExtension.newInstance()
-        .options(wireMockConfig()
-            .port(8090)
-            .extensions(new ResponseTemplateTransformer(true)))
-        .build();
-    // WireMockServer wireMockServer;
+    // @RegisterExtension
+    // static WireMockExtension wme = WireMockExtension.newInstance()
+    //     .options(wireMockConfig()
+    //         .port(8090)
+    //         .extensions(new ResponseTemplateTransformer(true)))
+    //     .build();
+    WireMockServer wireMockServer;
     // @Rule
     // public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
     //     .extensions(new ResponseTemplateTransformer(true)));
@@ -56,27 +57,27 @@ class ITOauthPlaywrightTest {
         // WireMockConfiguration wireMockConfiguration = WireMockConfiguration.options()
         //         .extensions(CaptureStateTransformer.class);
 
-        // wireMockServer = new WireMockServer(options()
-        //     .port(8090)
-        //     .extensions(CaptureStateTransformer.class));
+        wireMockServer = new WireMockServer(options()
+            .port(8090)
+            .extensions(new ResponseTemplateTransformer(true)));
         // wireMockServer.start();
 
         // String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-provider?code=my-acccess-code&state=${state}", port);
 
         // set up a Mock OAuth server
-        wme.stubFor(get(urlPathMatching("/oauth/authorize.*"))
+        wireMockServer.stubFor(get(urlPathMatching("/oauth/authorize.*"))
                 .willReturn(aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "text/html")
                     .withBodyFile("login.html")));
 
-        wme.stubFor(post(urlPathEqualTo("/login"))
+        wireMockServer.stubFor(post(urlPathEqualTo("/login"))
                     .willReturn(temporaryRedirect("{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
 
-        wme.stubFor(post(urlPathEqualTo("/oauth/token"))
+        wireMockServer.stubFor(post(urlPathEqualTo("/oauth/token"))
                     .willReturn(okJson("{\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\",\"token_type\": \"Bearer\",\"expires_in\":\"3600\",\"scope\":\"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid\"}")));
 
-        wme.stubFor(get(urlPathMatching("/userinfo"))
+        wireMockServer.stubFor(get(urlPathMatching("/userinfo"))
                 .willReturn(okJson("{\"sub\":\"107126842018026740288\"" +
                                 ",\"name\":\"Andrew Peng\"" +
                                 ",\"given_name\":\"Andrew\"" +
@@ -93,6 +94,8 @@ class ITOauthPlaywrightTest {
         // wme.stubFor(get(urlPathEqualTo("/userinfo"))
         //         .willReturn(okJson("{\"sub\":\"my-id\",\"email\":\"andrewpeng@ucsb.edu\"}")));
 
+        wireMockServer.start();
+
         browser = Playwright.create().chromium().launch();
         BrowserContext context = browser.newContext();
         page = context.newPage();
@@ -100,7 +103,7 @@ class ITOauthPlaywrightTest {
 
     @AfterEach
     public void teardown() {
-        // wireMockServer.stop();
+        wireMockServer.stop();
 
         browser.close();
     }
@@ -110,8 +113,10 @@ class ITOauthPlaywrightTest {
         String url = String.format("http://localhost:%d/oauth2/authorization/my-oauth-provider", port);
         page.navigate(url);
 
-        page.fill("input[name=username]", "andrewpeng@ucsb.edu");
-        page.fill("input[name=password]", "password");
+        // page.getByText("Log In").click();
+
+        // page.fill("input[name=username]", "andrewpeng@ucsb.edu");
+        // page.fill("input[name=password]", "password");
         page.locator("#submit").click();
 
         String bodyHTML = page.innerHTML("body");

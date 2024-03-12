@@ -290,6 +290,7 @@
                 </dependency>
             </dependencies>
         </profile>
+
         <profile>
             <id>integration</id>
             <activation>
