@@ -20,7 +20,7 @@ collections:
 repo_name: "TBD"
 
 
-repo: ucsb-cs156-w24/pconrad-jpa03-it
-owner: ucsb-cs156-w24
+repo: ucsb-cs156-s24/pconrad-jpa03-it
+owner: ucsb-cs156-s24
 repo_name: pconrad-jpa03-it
-pull_requests: [{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"pcAp-wiremockoauth-refactor","number":3,"title":"Pc ap wiremockoauth refactor","url":"https://github.com/ucsb-cs156-w24/pconrad-jpa03-it/pull/3"},{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"ap-wiremockoauth","number":2,"title":"ap-add maven profile to run h2 with frontend, working simple test","url":"https://github.com/ucsb-cs156-w24/pconrad-jpa03-it/pull/2"},{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"ap-wiremockoauth","number":1,"title":"Ap wiremockoauth","url":"https://github.com/ucsb-cs156-w24/pconrad-jpa03-it/pull/1"}]
+pull_requests: [{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"pcAp-wiremockoauth-refactor","number":3,"title":"Pc ap wiremockoauth refactor","url":"https://github.com/ucsb-cs156-s24/pconrad-jpa03-it/pull/3"},{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"ap-wiremockoauth","number":2,"title":"ap-add maven profile to run h2 with frontend, working simple test","url":"https://github.com/ucsb-cs156-s24/pconrad-jpa03-it/pull/2"},{"author":{"id":"MDQ6VXNlcjExMTkwMTc=","is_bot":false,"login":"pconrad","name":"Phill Conrad"},"headRefName":"ap-wiremockoauth","number":1,"title":"Ap wiremockoauth","url":"https://github.com/ucsb-cs156-s24/pconrad-jpa03-it/pull/1"}]
