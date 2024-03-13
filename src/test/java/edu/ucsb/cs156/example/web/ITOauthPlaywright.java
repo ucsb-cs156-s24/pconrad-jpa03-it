@@ -1,5 +1,6 @@
 package edu.ucsb.cs156.example.web;
 
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -21,11 +22,15 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
+
 import com.microsoft.playwright.Playwright;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 import edu.ucsb.cs156.example.CaptureStateTransformer;
 import edu.ucsb.cs156.example.helpers.StringSource;
+import edu.ucsb.cs156.example.services.WiremockServiceImpl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -43,61 +48,38 @@ class ITOauthPlaywright {
 
     @RegisterExtension
     static WireMockExtension wme = WireMockExtension.newInstance()
-        .options(wireMockConfig()
-            .port(8090)
-            .extensions(new ResponseTemplateTransformer(true)))
-        .build();
+            .options(wireMockConfig()
+                    .port(8090)
+                    .extensions(new ResponseTemplateTransformer(true)))
+            .build();
     // WireMockServer wireMockServer;
     // @Rule
-    // public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
-    //     .extensions(new ResponseTemplateTransformer(true)));
+    // public WireMockRule wireMockRule = new
+    // WireMockRule(wireMockConfig().port(8090)
+    // .extensions(new ResponseTemplateTransformer(true)));
 
     @BeforeEach
     public void setup() {
         // WireMockConfiguration wireMockConfiguration = WireMockConfiguration.options()
-        //         .extensions(CaptureStateTransformer.class);
+        // .extensions(CaptureStateTransformer.class);
 
         // wireMockServer = new WireMockServer(options()
-        //     .port(8090)
-        //     .extensions(CaptureStateTransformer.class));
+        // .port(8090)
+        // .extensions(CaptureStateTransformer.class));
         // wireMockServer.start();
 
-        // String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-provider?code=my-acccess-code&state=${state}", port);
+        // String header =
+        // String.format("http://localhost:%d/login/oauth2/code/my-oauth-provider?code=my-acccess-code&state=${state}",
+        // port);
 
         // set up a Mock OAuth server
-        wme.stubFor(get(urlPathMatching("/oauth/authorize.*"))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "text/html")
-                    .withBodyFile("login.html")));
 
-        wme.stubFor(post(urlPathEqualTo("/login"))
-                    .willReturn(temporaryRedirect("{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
+        WiremockServiceImpl.setupMocks(wme);
 
-        wme.stubFor(post(urlPathEqualTo("/oauth/token"))
-                    .willReturn(okJson("{\"token_type\": \"Bearer\",\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\"}")));
+        // browser = Playwright.create().chromium().launch();
 
-        wme.stubFor(get(urlPathMatching("/userinfo"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"sub\":\"107126842018026740288\"" +
-                                ",\"name\":\"Andrew Peng\"" +
-                                ",\"given_name\":\"Andrew\"" +
-                                ",\"family_name\":\"Peng\"" +
-                                ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
-                                ", \"email\":\"andrewpeng@ucsb.edu\"" +
-                                ",\"email_verified\":true" +
-                                ",\"locale\":\"en\"" +
-                                ",\"hd\":\"ucsb.edu\"" +
-                                "}")
-                )
-        );
+        browser = Playwright.create().chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
 
-        // wme.stubFor(get(urlPathEqualTo("/userinfo"))
-        //         .willReturn(okJson("{\"sub\":\"my-id\",\"email\":\"andrewpeng@ucsb.edu\"}")));
-
-        browser = Playwright.create().chromium().launch();
         BrowserContext context = browser.newContext();
         page = context.newPage();
     }
@@ -117,15 +99,8 @@ class ITOauthPlaywright {
         page.locator("#password").fill("password");
         page.locator("#submit").click();
 
-        // String cURL = page.url();
-        // assertSame("http://localhost:8080/", cURL);
-
-        // String cURL = String.format("http://localhost:%d/profile", port);
-        // page.navigate(cURL);
-
-        String bodyHTML = page.innerHTML("body");
-        String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
-        assertEquals(expectedHTML, bodyHTML);
+        assertThat(page.getByText("Log Out")).isVisible();
+        assertThat(page.getByText("Welcome, andrewpeng@ucsb.edu")).isVisible();
     }
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
+import com.github.tomakehurst.wiremock.junit.Stubbing;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -34,28 +35,24 @@ public class WiremockServiceImpl extends WiremockService {
     return wireMockServer;
   }
 
-  public void init() {
-    log.info("WiremockServiceImpl.init() called");
+  public static void setupMocks(Stubbing s) {
 
-    WireMockServer wireMockServer = new WireMockServer(options()
-        .port(8090) // No-args constructor will start on port
-        .extensions(new ResponseTemplateTransformer(true))); // 8080, no HTTPS
-
-    wireMockServer.stubFor(get(urlPathMatching("/oauth/authorize.*"))
+    s.stubFor(get(urlPathMatching("/oauth/authorize.*"))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "text/html")
             .withBodyFile("login.html")));
 
-    wireMockServer.stubFor(post(urlPathEqualTo("/login"))
+    s.stubFor(post(urlPathEqualTo("/login"))
         .willReturn(temporaryRedirect(
             "{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
 
-    wireMockServer.stubFor(post(urlPathEqualTo("/oauth/token"))
+    s.stubFor(post(urlPathEqualTo("/oauth/token"))
         .willReturn(
-            okJson("{\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\",\"token_type\": \"Bearer\",\"expires_in\":\"3600\",\"scope\":\"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid\"}")));
+            okJson(
+                "{\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\",\"token_type\": \"Bearer\",\"expires_in\":\"3600\",\"scope\":\"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid\"}")));
 
-    wireMockServer.stubFor(get(urlPathMatching("/userinfo"))
+    s.stubFor(get(urlPathMatching("/userinfo"))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "application/json")
@@ -70,6 +67,17 @@ public class WiremockServiceImpl extends WiremockService {
                 ",\"locale\":\"en\"" +
                 ",\"hd\":\"ucsb.edu\"" +
                 "}")));
+
+  }
+
+  public void init() {
+    log.info("WiremockServiceImpl.init() called");
+
+    WireMockServer wireMockServer = new WireMockServer(options()
+        .port(8090) // No-args constructor will start on port
+        .extensions(new ResponseTemplateTransformer(true))); // 8080, no HTTPS
+
+    setupMocks(wireMockServer);
 
     wireMockServer.start();
 
