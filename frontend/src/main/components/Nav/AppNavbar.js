@@ -5,7 +5,7 @@ import AppNavbarLocalhost from "main/components/Nav/AppNavbarLocalhost"
 
 export default function AppNavbar({ currentUser, systemInfo, doLogout, currentUrl = window.location.href }) {
   return (
-    <>
+    <>  
       {
         (currentUrl.startsWith("http://localhost:3000") ||
           currentUrl.startsWith("http://127.0.0.1:3000")) && (
