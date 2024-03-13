@@ -27,6 +27,7 @@ import com.microsoft.playwright.Playwright;
 import edu.ucsb.cs156.example.CaptureStateTransformer;
 import edu.ucsb.cs156.example.helpers.StringSource;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -41,60 +42,53 @@ class ITOauthPlaywright {
     private Browser browser;
     private Page page;
 
-    // @RegisterExtension
-    // static WireMockExtension wme = WireMockExtension.newInstance()
-    //     .options(wireMockConfig()
-    //         .port(8090)
-    //         .extensions(new ResponseTemplateTransformer(true)))
-    //     .build();
-    WireMockServer wireMockServer;
-    // @Rule
-    // public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8090)
-    //     .extensions(new ResponseTemplateTransformer(true)));
+    @RegisterExtension
+    static WireMockExtension wme = WireMockExtension.newInstance()
+        .options(wireMockConfig()
+            .port(8090)
+            .extensions(new ResponseTemplateTransformer(true)))
+        .build();
+    // WireMockServer wireMockServer;
 
     @BeforeEach
     public void setup() {
-        // WireMockConfiguration wireMockConfiguration = WireMockConfiguration.options()
-        //         .extensions(CaptureStateTransformer.class);
-
-        wireMockServer = new WireMockServer(options()
-            .port(8090)
-            .extensions(new ResponseTemplateTransformer(true)));
+        // wireMockServer = new WireMockServer(options()
+        //     .port(8090)
+        //     .extensions(new ResponseTemplateTransformer(true)));
         // wireMockServer.start();
 
-        // String header = String.format("http://localhost:%d/login/oauth2/code/my-oauth-provider?code=my-acccess-code&state=${state}", port);
-
         // set up a Mock OAuth server
-        wireMockServer.stubFor(get(urlPathMatching("/oauth/authorize.*"))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "text/html")
-                    .withBodyFile("login.html")));
+        wme.stubFor(get(urlPathMatching("/oauth/authorize.*"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "text/html")
+            .withBodyFile("login.html")));
 
-        wireMockServer.stubFor(post(urlPathEqualTo("/login"))
-                    .willReturn(temporaryRedirect("{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
+        wme.stubFor(post(urlPathEqualTo("/login"))
+            .willReturn(temporaryRedirect(
+                "{{formData request.body 'form' urlDecode=true}}{{{form.redirectUri}}}?code={{{randomValue length=30 type='ALPHANUMERIC'}}}&state={{{form.state}}}")));
 
-        wireMockServer.stubFor(post(urlPathEqualTo("/oauth/token"))
-                    .willReturn(okJson("{\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\",\"token_type\": \"Bearer\",\"expires_in\":\"3600\",\"scope\":\"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid\"}")));
+        wme.stubFor(post(urlPathEqualTo("/oauth/token"))
+            .willReturn(
+                okJson("{\"access_token\":\"{{randomValue length=20 type='ALPHANUMERIC'}}\",\"token_type\": \"Bearer\",\"expires_in\":\"3600\",\"scope\":\"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid\"}")));
 
-        wireMockServer.stubFor(get(urlPathMatching("/userinfo"))
-                .willReturn(okJson("{\"sub\":\"107126842018026740288\"" +
-                                ",\"name\":\"Andrew Peng\"" +
-                                ",\"given_name\":\"Andrew\"" +
-                                ",\"family_name\":\"Peng\"" +
-                                ",\"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
-                                ", \"email\":\"andrewpeng@ucsb.edu\"" +
-                                ",\"email_verified\":true" +
-                                ",\"locale\":\"en\"" +
-                                ",\"hd\":\"ucsb.edu\"" +
-                                "}")
-                )
-        );
+        wme.stubFor(get(urlPathMatching("/userinfo"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"sub\":\"107126842018026740288\"" +
+                    ",\"name\":\"Andrew Peng\"" +
+                    ",\"given_name\":\"Andrew\"" +
+                    ",\"family_name\":\"Peng\"" +
+                    ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\""
+                    +
+                    ", \"email\":\"andrewpeng@ucsb.edu\"" +
+                    ",\"email_verified\":true" +
+                    ",\"locale\":\"en\"" +
+                    ",\"hd\":\"ucsb.edu\"" +
+                    "}")));
 
-        // wme.stubFor(get(urlPathEqualTo("/userinfo"))
-        //         .willReturn(okJson("{\"sub\":\"my-id\",\"email\":\"andrewpeng@ucsb.edu\"}")));
-
-        wireMockServer.start();
+        // wireMockServer.start();
 
         browser = Playwright.create().chromium().launch();
         BrowserContext context = browser.newContext();
@@ -103,7 +97,7 @@ class ITOauthPlaywright {
 
     @AfterEach
     public void teardown() {
-        wireMockServer.stop();
+        // wireMockServer.stop();
 
         browser.close();
     }
@@ -115,13 +109,18 @@ class ITOauthPlaywright {
 
         // page.getByText("Log In").click();
 
-        // page.fill("input[name=username]", "andrewpeng@ucsb.edu");
-        // page.fill("input[name=password]", "password");
+        page.fill("input[name=username]", "andrewpeng@ucsb.edu");
+        page.fill("input[name=password]", "password");
         page.locator("#submit").click();
 
-        String bodyHTML = page.innerHTML("body");
-        String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
-        assertEquals(expectedHTML, bodyHTML);
+        // page.getByText("Admin").click();
+        // page.getByText("Users").click();
+
+        assertThat(page.getByText("Log Out")).isVisible();
+
+        // String bodyHTML = page.innerHTML("body");
+        // String expectedHTML = StringSource.getIntegrationDefaultLocalhostContent();
+        // assertEquals(expectedHTML, bodyHTML);
     }
 
 }
