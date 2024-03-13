@@ -1,0 +1,56 @@
+package edu.ucsb.cs156.example.web;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import edu.ucsb.cs156.example.ExampleApplication;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+
+import org.springframework.test.web.servlet.htmlunit.MockMvcWebClientBuilder;
+import org.springframework.web.context.WebApplicationContext;
+
+import com.microsoft.playwright.*;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@SpringBootTest(classes = { ExampleApplication.class })
+public class ITWebsiteIntegrationTests1 {
+
+    private Browser browser;
+    private Page page;
+
+    @BeforeEach
+    public void setup() {
+        browser = Playwright.create().chromium().launch();
+        BrowserContext context = browser.newContext();
+        page = context.newPage();
+    }
+
+    @AfterEach
+    public void teardown() {
+        browser.close();
+    }
+
+    @Test
+    public void testGreeting() throws Exception {
+        page.navigate("http://localhost:8080/");
+        String bodyText = page.innerText("body");
+        assertEquals("Hello, World!", bodyText);
+    }
+}
+
+
+
+
