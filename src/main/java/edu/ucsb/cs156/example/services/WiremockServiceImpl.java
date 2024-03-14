@@ -35,7 +35,7 @@ public class WiremockServiceImpl extends WiremockService {
     return wireMockServer;
   }
 
-  public static void setupMocks(Stubbing s) {
+  public static void setupOauthMocks(Stubbing s) {
 
     s.stubFor(get(urlPathMatching("/oauth/authorize.*"))
         .willReturn(aResponse()
@@ -57,12 +57,11 @@ public class WiremockServiceImpl extends WiremockService {
             .withStatus(200)
             .withHeader("Content-Type", "application/json")
             .withBody("{\"sub\":\"107126842018026740288\"" +
-                ",\"name\":\"Andrew Peng\"" +
-                ",\"given_name\":\"Andrew\"" +
-                ",\"family_name\":\"Peng\"" +
-                ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\""
-                +
-                ", \"email\":\"andrewpeng@ucsb.edu\"" +
+                ",\"name\":\"Chris Gaucho\"" +
+                ",\"given_name\":\"Chris\"" +
+                ",\"family_name\":\"Gaucho\"" +
+                ", \"picture\":\"https://lh3.googleusercontent.com/a/ACg8ocJpOe2SqIpirdIMx7KTj1W4OQ45t6FwpUo40K2V2JON=s96-c\"" +
+                ", \"email\":\"cgaucho@ucsb.edu\"" +
                 ",\"email_verified\":true" +
                 ",\"locale\":\"en\"" +
                 ",\"hd\":\"ucsb.edu\"" +
@@ -77,7 +76,7 @@ public class WiremockServiceImpl extends WiremockService {
         .port(8090) // No-args constructor will start on port
         .extensions(new ResponseTemplateTransformer(true))); // 8080, no HTTPS
 
-    setupMocks(wireMockServer);
+    setupOauthMocks(wireMockServer);
 
     wireMockServer.start();
 

@@ -119,16 +119,6 @@
             <version>1.19.4</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- This is to support @Rule in junit5 see: https://www.arhohuttunen.com/junit-5-migration/ -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-migrationsupport</artifactId>
-            <version>5.8.0</version>
-            <scope>test</scope>
-        </dependency>
-
-
     </dependencies>
 
     <build>
@@ -280,8 +270,6 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-
-
             <properties>
                 <springProfiles>development</springProfiles>
             </properties>
@@ -384,7 +372,6 @@
                     <name>env.WIREMOCK</name>
                 </property>
             </activation>
-
             <properties>
                 <springProfiles>wiremock,development</springProfiles>
             </properties>
